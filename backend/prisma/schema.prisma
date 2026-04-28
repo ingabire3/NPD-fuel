@@ -1,0 +1,305 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  MANAGER
+  DRIVER
+  FINANCE
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FULFILLED
+  CANCELLED
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  FLAGGED
+}
+
+enum AnomalyType {
+  EXCESS_CONSUMPTION
+  FAKE_RECEIPT
+  ODOMETER_MISMATCH
+  FREQUENCY_ABUSE
+  ALLOCATION_EXCEEDED
+}
+
+enum AnomalySeverity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum AnomalyStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+enum FuelVariance {
+  NORMAL
+  WARNING
+  SUSPICIOUS
+}
+
+enum UserApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SystemRecommendation {
+  APPROVE
+  FLAG
+  REJECT
+}
+
+// ─── MODELS ───────────────────────────────────────────────────────────────────
+
+model User {
+  id           String  @id @default(uuid())
+  fullName     String
+  email        String  @unique
+  phone        String?
+  passwordHash String
+  role         Role    @default(DRIVER)
+  department   String?
+  isActive       Boolean             @default(true)
+  approvalStatus UserApprovalStatus?
+
+  managerId    String?
+  manager      User?   @relation("ManagerSubordinates", fields: [managerId], references: [id])
+  subordinates User[]  @relation("ManagerSubordinates")
+
+  homeLat         Float?
+  homeLng         Float?
+  homeAddress     String?
+  workLat         Float?
+  workLng         Float?
+  workAddress     String?
+  dailyDistanceKm Float?
+
+  refreshTokens       RefreshToken[]
+  vehicles            Vehicle[]                @relation("AssignedDriver")
+  allocations         FuelAllocation[]
+  requests            FuelRequest[]            @relation("DriverRequests")
+  approvals           FuelRequest[]            @relation("ApproverRequests")
+  anomalies           AnomalyLog[]
+  notifications       Notification[]
+  monthlyOdometers    MonthlyOdometerReading[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+model Vehicle {
+  id               String   @id @default(uuid())
+  plateNumber      String   @unique
+  make             String
+  model            String
+  year             Int
+  fuelType         FuelType
+  tankCapacity     Float
+  averageKmPerL    Float?
+  isActive         Boolean  @default(true)
+
+  assignedDriverId String?
+  assignedDriver   User?   @relation("AssignedDriver", fields: [assignedDriverId], references: [id])
+
+  allocations      FuelAllocation[]
+  requests         FuelRequest[]
+  monthlyOdometers MonthlyOdometerReading[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vehicles")
+}
+
+model FuelAllocation {
+  id              String  @id @default(uuid())
+  userId          String
+  user            User    @relation(fields: [userId], references: [id])
+  vehicleId       String
+  vehicle         Vehicle @relation(fields: [vehicleId], references: [id])
+  month           Int
+  year            Int
+  allocatedLiters     Float
+  allocatedAmount     Float
+  usedLiters          Float   @default(0)
+  remainingLiters     Float
+  workingDays         Int?
+  fuelPricePerLitre   Float?
+  monthlyExpectedFuel Float?
+  totalExpectedCost   Float?
+
+  requests FuelRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, vehicleId, month, year])
+  @@map("fuel_allocations")
+}
+
+model FuelRequest {
+  id               String         @id @default(uuid())
+  driverId         String
+  driver           User           @relation("DriverRequests", fields: [driverId], references: [id])
+  vehicleId        String
+  vehicle          Vehicle        @relation(fields: [vehicleId], references: [id])
+  allocationId     String?
+  allocation       FuelAllocation? @relation(fields: [allocationId], references: [id])
+
+  requestedLiters  Float
+  requestedAmount  Float
+  purpose          String
+  tripDescription  String?
+  odometerBefore   Float?
+  odometerAfter    Float?
+  odometerImageUrl String?
+
+  status          RequestStatus @default(PENDING)
+  approverId      String?
+  approver        User?         @relation("ApproverRequests", fields: [approverId], references: [id])
+  rejectionReason String?
+
+  receipt   FuelReceipt?
+  anomalies AnomalyLog[]
+
+  estimatedDistance    Float?
+  expectedFuel         Float?
+  fuelVariance         FuelVariance          @default(NORMAL)
+  systemRecommendation SystemRecommendation?
+
+  approvedAt  DateTime?
+  fulfilledAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("fuel_requests")
+}
+
+model FuelReceipt {
+  id                 String             @id @default(uuid())
+  requestId          String             @unique
+  request            FuelRequest        @relation(fields: [requestId], references: [id])
+
+  stationName        String?
+  stationLocation    String?
+  litersDispensed    Float?
+  amountPaid         Float?
+  receiptDate        DateTime?
+  imageUrl           String
+  ocrRawData         Json?
+  ocrConfidence      Float?
+
+  verificationStatus VerificationStatus @default(PENDING)
+  verifiedAt         DateTime?
+  verifiedBy         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("fuel_receipts")
+}
+
+model AnomalyLog {
+  id          String          @id @default(uuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  requestId   String?
+  request     FuelRequest?    @relation(fields: [requestId], references: [id])
+
+  type        AnomalyType
+  severity    AnomalySeverity
+  description String
+  evidence    Json?
+
+  status     AnomalyStatus @default(OPEN)
+  resolvedAt DateTime?
+  resolvedBy String?
+  resolution String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("anomaly_logs")
+}
+
+model Notification {
+  id       String  @id @default(uuid())
+  userId   String
+  user     User    @relation(fields: [userId], references: [id])
+  title    String
+  message  String
+  type     String
+  isRead   Boolean @default(false)
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model RouteCache {
+  id         String   @id @default(uuid())
+  cacheKey   String   @unique
+  distanceKm Float
+  createdAt  DateTime @default(now())
+
+  @@map("route_cache")
+}
+
+model MonthlyOdometerReading {
+  id               String  @id @default(uuid())
+  userId           String
+  user             User    @relation(fields: [userId], references: [id])
+  vehicleId        String
+  vehicle          Vehicle @relation(fields: [vehicleId], references: [id])
+  month            Int
+  year             Int
+  startOdometer    Float?
+  endOdometer      Float?
+  actualDistanceKm Float?
+  startImageUrl    String?
+  endImageUrl      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, vehicleId, month, year])
+  @@map("monthly_odometer_readings")
+}

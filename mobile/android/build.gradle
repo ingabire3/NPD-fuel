@@ -1,0 +1,33 @@
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// Provide flutter extension values to Flutter plugin library subprojects that
+// still reference flutter.compileSdkVersion / flutter.minSdkVersion (old style).
+// Excluded from :app because the Flutter Gradle plugin reads project.ext.flutter
+// for its own source-directory lookup — injecting here would shadow that.
+subprojects {
+    if (name != 'app') {
+        ext.flutter = [
+            compileSdkVersion: 36,
+            minSdkVersion    : 24,
+            targetSdkVersion : 36,
+            ndkVersion       : "28.2.13676358",
+        ]
+    }
+}
+
+rootProject.buildDir = "../build"
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(":app")
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
