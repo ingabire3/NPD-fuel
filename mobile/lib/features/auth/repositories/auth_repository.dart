@@ -15,43 +15,45 @@ class AuthRepository {
     required double workLat,
     required double workLng,
     String? workAddress,
+    required double dailyDistance,
     required String plateNumber,
     required String vehicleMake,
     required String vehicleModel,
     required int vehicleYear,
     required String fuelType,
     required double tankCapacity,
-    double? averageKmPerL,
+    double? fuelEfficiency,
   }) async {
-    // Step 1: Create auth user — trigger auto-creates users row with PENDING status
+    // Step 1: Create auth user — trigger auto-creates users row (PENDING)
     final response = await _supabase.auth.signUp(
       email: email,
       password: password,
-      data: {'full_name': fullName, 'role': 'DRIVER'},
+      data: {'full_name': fullName, 'role': 'driver'},
     );
     final userId = response.user?.id;
     if (userId == null) throw Exception('Registration failed — no user returned.');
 
-    // Step 2: Populate profile + vehicle via SECURITY DEFINER RPC
+    // Step 2: Save location + vehicle via SECURITY DEFINER RPC
     await _supabase.rpc('register_driver', params: {
-      'p_user_id': userId,
-      'p_phone': phone,
-      'p_home_lat': homeLat,
-      'p_home_lng': homeLng,
-      'p_home_address': homeAddress,
-      'p_work_lat': workLat,
-      'p_work_lng': workLng,
-      'p_work_address': workAddress,
-      'p_plate_number': plateNumber,
-      'p_vehicle_make': vehicleMake,
-      'p_vehicle_model': vehicleModel,
-      'p_vehicle_year': vehicleYear,
-      'p_fuel_type': fuelType,
-      'p_tank_capacity': tankCapacity,
-      'p_average_km_per_l': averageKmPerL,
+      'p_user_id':        userId,
+      'p_phone':          phone,
+      'p_home_lat':       homeLat,
+      'p_home_lng':       homeLng,
+      'p_home_address':   homeAddress,
+      'p_work_lat':       workLat,
+      'p_work_lng':       workLng,
+      'p_work_address':   workAddress,
+      'p_daily_distance': dailyDistance,
+      'p_plate_number':   plateNumber,
+      'p_vehicle_make':   vehicleMake,
+      'p_vehicle_model':  vehicleModel,
+      'p_vehicle_year':   vehicleYear,
+      'p_fuel_type':      fuelType,
+      'p_tank_capacity':  tankCapacity,
+      'p_fuel_efficiency': fuelEfficiency ?? 10.0,
     });
 
-    // Step 3: Sign out — account needs admin approval before first login
+    // Step 3: Sign out — needs admin approval before first login
     await _supabase.auth.signOut();
 
     return 'Registration successful! Your account is pending admin approval.';

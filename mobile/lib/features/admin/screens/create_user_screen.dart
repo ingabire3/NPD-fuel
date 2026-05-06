@@ -14,12 +14,11 @@ class CreateUserScreen extends ConsumerStatefulWidget {
 
 class _CreateUserScreenState extends ConsumerState<CreateUserScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameCtrl = TextEditingController();
+  final _nameCtrl  = TextEditingController();
   final _emailCtrl = TextEditingController();
-  final _passCtrl = TextEditingController();
+  final _passCtrl  = TextEditingController();
   final _phoneCtrl = TextEditingController();
-  final _deptCtrl = TextEditingController();
-  String _selectedRole = 'DRIVER';
+  String _selectedRole = 'driver';
   bool _obscure = true;
 
   @override
@@ -28,19 +27,17 @@ class _CreateUserScreenState extends ConsumerState<CreateUserScreen> {
     _emailCtrl.dispose();
     _passCtrl.dispose();
     _phoneCtrl.dispose();
-    _deptCtrl.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     ref.read(createUserProvider.notifier).create(
-          fullName: _nameCtrl.text.trim(),
+          name: _nameCtrl.text.trim(),
           email: _emailCtrl.text.trim().toLowerCase(),
           password: _passCtrl.text,
           role: _selectedRole,
           phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
-          department: _deptCtrl.text.trim().isEmpty ? null : _deptCtrl.text.trim(),
         );
   }
 
@@ -126,10 +123,9 @@ class _CreateUserScreenState extends ConsumerState<CreateUserScreen> {
                     prefixIcon: Icon(Icons.badge_outlined),
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'DRIVER', child: Text('Driver')),
-                    DropdownMenuItem(value: 'MANAGER', child: Text('Manager')),
-                    DropdownMenuItem(value: 'FINANCE', child: Text('Finance')),
-                    DropdownMenuItem(value: 'SUPER_ADMIN', child: Text('Super Admin')),
+                    DropdownMenuItem(value: 'driver',      child: Text('Driver')),
+                    DropdownMenuItem(value: 'finance',     child: Text('Finance')),
+                    DropdownMenuItem(value: 'super_admin', child: Text('Super Admin')),
                   ],
                   onChanged: (v) => setState(() => _selectedRole = v!),
                 ),
@@ -142,18 +138,13 @@ class _CreateUserScreenState extends ConsumerState<CreateUserScreen> {
                     prefixIcon: Icon(Icons.phone_outlined),
                   ),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _deptCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Department (optional)',
-                    prefixIcon: Icon(Icons.business_outlined),
-                  ),
-                ),
                 const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: state.isLoading ? null : _submit,
-                  child: const Text('Create User'),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: state.isLoading ? null : _submit,
+                    child: const Text('Create User'),
+                  ),
                 ),
               ],
             ),

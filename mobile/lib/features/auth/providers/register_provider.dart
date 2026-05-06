@@ -45,13 +45,14 @@ class RegisterNotifier extends StateNotifier<RegisterState> {
     required double workLat,
     required double workLng,
     String? workAddress,
+    required double dailyDistance,
     required String plateNumber,
     required String vehicleMake,
     required String vehicleModel,
     required int vehicleYear,
     required String fuelType,
     required double tankCapacity,
-    double? averageKmPerL,
+    double? fuelEfficiency,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
@@ -66,13 +67,14 @@ class RegisterNotifier extends StateNotifier<RegisterState> {
         workLat: workLat,
         workLng: workLng,
         workAddress: workAddress,
+        dailyDistance: dailyDistance,
         plateNumber: plateNumber,
         vehicleMake: vehicleMake,
         vehicleModel: vehicleModel,
         vehicleYear: vehicleYear,
         fuelType: fuelType,
         tankCapacity: tankCapacity,
-        averageKmPerL: averageKmPerL,
+        fuelEfficiency: fuelEfficiency,
       );
       state = RegisterState(isSuccess: true, successMessage: message);
     } catch (e) {

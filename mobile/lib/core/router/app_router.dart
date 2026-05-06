@@ -14,6 +14,7 @@ import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/allocations/screens/allocations_screen.dart';
 import '../../features/allocations/screens/create_allocation_screen.dart';
+import '../../core/models/allocation_model.dart';
 import '../../features/anomalies/screens/anomalies_screen.dart';
 import '../../features/admin/screens/users_screen.dart';
 import '../../features/admin/screens/create_user_screen.dart';
@@ -24,15 +25,19 @@ import '../widgets/main_scaffold.dart';
 class _RouterNotifier extends ChangeNotifier {
   _RouterNotifier(this._ref) {
     _authStatus = _ref.read(authProvider).status;
+    _userRole = _ref.read(authProvider).user?.role;
     _ref.listen<AuthState>(authProvider, (_, next) {
       _authStatus = next.status;
+      _userRole = next.user?.role;
       notifyListeners();
     });
   }
   final Ref _ref;
   late AuthStatus _authStatus;
+  String? _userRole;
 
   AuthStatus get authStatus => _authStatus;
+  String? get userRole => _userRole;
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -52,6 +57,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (isUnknown) return null;
       if (!isAuth && !isPublic) return '/login';
       if (isAuth && isPublic) return '/dashboard';
+
+      // Role-based route guards
+      final role = notifier.userRole ?? '';
+      final path = state.matchedLocation;
+
+      // Admin-only: user/vehicle management
+      if (path.startsWith('/admin/') && role != 'super_admin') return '/dashboard';
+
+      // Finance + super_admin only: create/edit allocations
+      if ((path == '/allocations/new' || path.endsWith('/edit')) &&
+          role == 'driver') return '/allocations';
+
       return null;
     },
     routes: [
@@ -103,6 +120,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'new',
                 builder: (_, __) => const CreateAllocationScreen(),
+              ),
+              GoRoute(
+                path: ':id/edit',
+                builder: (_, state) => CreateAllocationScreen(
+                  allocation: state.extra as AllocationModel?,
+                ),
               ),
             ],
           ),

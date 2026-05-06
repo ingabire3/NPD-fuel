@@ -43,6 +43,7 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final sb.SupabaseClient _supabase;
   StreamSubscription? _sub;
+  String? _pendingError;
 
   AuthNotifier(this._supabase) : super(const AuthState()) {
     _init();
@@ -59,7 +60,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (event.session != null) {
         await _loadUser(event.session!.user.id);
       } else {
-        state = const AuthState(status: AuthStatus.unauthenticated);
+        final err = _pendingError;
+        _pendingError = null;
+        state = AuthState(status: AuthStatus.unauthenticated, error: err);
       }
     });
   }
@@ -67,11 +70,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _loadUser(String userId) async {
     try {
       final data = await _supabase.from('users').select().eq('id', userId).single();
-      final approvalStatus = data['approval_status'] as String?;
-      final isActive = data['is_active'] as bool? ?? false;
+      final status = data['status'] as String?;
 
-      if (approvalStatus == 'PENDING' || !isActive) {
-        // Not approved yet — sign out silently
+      if (status != 'ACTIVE') {
+        _pendingError = status == 'PENDING'
+            ? 'Your account is pending admin approval.'
+            : 'Your account has been deactivated. Contact your administrator.';
         await _supabase.auth.signOut();
         return;
       }
@@ -80,7 +84,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: UserModel.fromJson(data as Map<String, dynamic>),
       );
     } catch (_) {
-      state = const AuthState(status: AuthStatus.unauthenticated);
+      _pendingError = 'Account profile not found. Contact your administrator.';
+      await _supabase.auth.signOut();
     }
   }
 

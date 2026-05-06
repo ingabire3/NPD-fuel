@@ -179,7 +179,7 @@ class _StatsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final cards = <_StatCard>[];
 
-    if (role == 'SUPER_ADMIN' || role == 'MANAGER') {
+    if (role == 'super_admin') {
       cards.addAll([
         _StatCard(
           label: 'Pending Requests',
@@ -210,7 +210,7 @@ class _StatsGrid extends StatelessWidget {
           bg: AppColors.successLight,
         ),
       ]);
-    } else if (role == 'DRIVER') {
+    } else if (role == 'driver') {
       cards.addAll([
         _StatCard(
           label: 'My Requests',
@@ -241,7 +241,7 @@ class _StatsGrid extends StatelessWidget {
           bg: AppColors.successLight,
         ),
       ]);
-    } else if (role == 'FINANCE') {
+    } else if (role == 'finance') {
       final budget = (stats['totalBudget'] as num?)?.toDouble() ?? 0;
       final usedL = (stats['totalUsedLiters'] as num?)?.toDouble() ?? 0;
       final allocL = (stats['totalAllocatedLiters'] as num?)?.toDouble() ?? 0;
@@ -356,7 +356,7 @@ class _QuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if (role == 'DRIVER' || role == 'SUPER_ADMIN')
+        if (role == 'driver' || role == 'super_admin')
           _ActionTile(
             icon: Icons.add_circle_outline,
             label: 'New Fuel Request',
@@ -364,7 +364,7 @@ class _QuickActions extends StatelessWidget {
             color: AppColors.primary,
             onTap: () => context.go('/requests/new'),
           ),
-        if (role == 'FINANCE') ...[
+        if (role == 'finance') ...[
           _ActionTile(
             icon: Icons.approval_outlined,
             label: 'Review Requests',
@@ -373,19 +373,11 @@ class _QuickActions extends StatelessWidget {
             onTap: () => context.go('/requests'),
           ),
         ],
-        if (role == 'SUPER_ADMIN')
+        if (role == 'super_admin')
           _ActionTile(
             icon: Icons.list_alt,
             label: 'Review Requests',
             subtitle: 'Approve, reject or manage all fuel requests',
-            color: AppColors.primary,
-            onTap: () => context.go('/requests'),
-          ),
-        if (role == 'MANAGER')
-          _ActionTile(
-            icon: Icons.list_alt,
-            label: 'Team Requests',
-            subtitle: 'Monitor your team\'s fuel requests',
             color: AppColors.primary,
             onTap: () => context.go('/requests'),
           ),
@@ -396,7 +388,7 @@ class _QuickActions extends StatelessWidget {
           color: AppColors.primary,
           onTap: () => context.go('/receipts'),
         ),
-        if (role == 'DRIVER')
+        if (role == 'driver')
           _ActionTile(
             icon: Icons.water_drop_outlined,
             label: 'My Allocation',
@@ -404,7 +396,7 @@ class _QuickActions extends StatelessWidget {
             color: AppColors.primary,
             onTap: () => context.go('/allocations'),
           ),
-        if (role == 'FINANCE') ...[
+        if (role == 'finance') ...[
           _ActionTile(
             icon: Icons.assignment_outlined,
             label: 'View Allocations',
@@ -420,7 +412,7 @@ class _QuickActions extends StatelessWidget {
             onTap: () => context.go('/anomalies'),
           ),
         ],
-        if (role == 'SUPER_ADMIN') ...[
+        if (role == 'super_admin') ...[
           _ActionTile(
             icon: Icons.people_outlined,
             label: 'User Management',

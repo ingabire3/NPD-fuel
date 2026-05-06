@@ -236,13 +236,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           workLat: _workLat!,
           workLng: _workLng!,
           workAddress: _workAddress,
+          dailyDistance: (_distanceKm ?? 0) * 2,
           plateNumber: _plateCtrl.text.trim().toUpperCase(),
           vehicleMake: _makeCtrl.text.trim(),
           vehicleModel: _modelCtrl.text.trim(),
           vehicleYear: int.parse(_yearCtrl.text.trim()),
           fuelType: _fuelType,
           tankCapacity: double.parse(_tankCtrl.text.trim()),
-          averageKmPerL: _efficiencyCtrl.text.trim().isEmpty
+          fuelEfficiency: _efficiencyCtrl.text.trim().isEmpty
               ? null
               : double.parse(_efficiencyCtrl.text.trim()),
         );

@@ -35,7 +35,7 @@ class MainScaffold extends ConsumerWidget {
 
   List<_NavTab> _buildTabs(String role) {
     switch (role) {
-      case 'SUPER_ADMIN':
+      case 'super_admin':
         return const [
           _NavTab('/dashboard', 'Dashboard', Icons.dashboard_outlined, Icons.dashboard),
           _NavTab('/requests', 'Requests', Icons.local_gas_station_outlined, Icons.local_gas_station),
@@ -43,22 +43,14 @@ class MainScaffold extends ConsumerWidget {
           _NavTab('/anomalies', 'Anomalies', Icons.warning_amber_outlined, Icons.warning_amber),
           _NavTab('/profile', 'Profile', Icons.person_outline, Icons.person),
         ];
-      case 'MANAGER':
-        return const [
-          _NavTab('/dashboard', 'Dashboard', Icons.dashboard_outlined, Icons.dashboard),
-          _NavTab('/requests', 'Requests', Icons.local_gas_station_outlined, Icons.local_gas_station),
-          _NavTab('/allocations', 'Allocations', Icons.assignment_outlined, Icons.assignment),
-          _NavTab('/anomalies', 'Anomalies', Icons.warning_amber_outlined, Icons.warning_amber),
-          _NavTab('/profile', 'Profile', Icons.person_outline, Icons.person),
-        ];
-      case 'FINANCE':
+      case 'finance':
         return const [
           _NavTab('/dashboard', 'Dashboard', Icons.bar_chart_outlined, Icons.bar_chart),
           _NavTab('/allocations', 'Allocations', Icons.assignment_outlined, Icons.assignment),
           _NavTab('/notifications', 'Alerts', Icons.notifications_outlined, Icons.notifications),
           _NavTab('/profile', 'Profile', Icons.person_outline, Icons.person),
         ];
-      default: // DRIVER
+      default: // driver
         return const [
           _NavTab('/dashboard', 'Dashboard', Icons.dashboard_outlined, Icons.dashboard),
           _NavTab('/requests', 'Requests', Icons.local_gas_station_outlined, Icons.local_gas_station),

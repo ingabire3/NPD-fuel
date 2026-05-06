@@ -14,7 +14,7 @@ final usersListProvider = FutureProvider<List<UserModel>>((ref) {
 });
 
 final driversListProvider = FutureProvider<List<UserModel>>((ref) {
-  return ref.watch(_usersRepoProvider).getAll(role: 'DRIVER');
+  return ref.watch(_usersRepoProvider).getAll(role: 'driver');
 });
 
 class CreateUserState {
@@ -39,27 +39,52 @@ class CreateUserNotifier extends StateNotifier<CreateUserState> {
   CreateUserNotifier(this._repo, this._ref) : super(const CreateUserState());
 
   Future<void> create({
-    required String fullName,
+    required String name,
     required String email,
     required String password,
     required String role,
     String? phone,
-    String? department,
   }) async {
     state = state.copyWith(isLoading: true, error: null, success: false);
     try {
       await _repo.create(
-        fullName: fullName,
+        name: name,
         email: email,
         password: password,
         role: role,
         phone: phone,
-        department: department,
       );
       _ref.invalidate(usersListProvider);
       state = state.copyWith(isLoading: false, success: true);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> approve(String id) async {
+    try {
+      await _repo.approveUser(id);
+      _ref.invalidate(usersListProvider);
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<void> reject(String id) async {
+    try {
+      await _repo.rejectUser(id);
+      _ref.invalidate(usersListProvider);
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<void> activate(String id) async {
+    try {
+      await _repo.activate(id);
+      _ref.invalidate(usersListProvider);
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
     }
   }
 

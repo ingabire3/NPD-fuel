@@ -12,47 +12,35 @@ class UsersRepository {
     return (data as List).map((e) => UserModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
-  // Creates a user via Supabase Edge Function (requires service role key server-side)
-  // Deploy the 'admin-create-user' Edge Function in your Supabase project.
-  Future<UserModel> create({
-    required String fullName,
+  Future<void> create({
+    required String name,
     required String email,
     required String password,
     required String role,
     String? phone,
-    String? department,
   }) async {
-    final res = await _supabase.functions.invoke('admin-create-user', body: {
-      'full_name': fullName,
-      'email': email,
-      'password': password,
-      'role': role,
-      if (phone != null) 'phone': phone,
-      if (department != null) 'department': department,
+    await _supabase.rpc('admin_create_user', params: {
+      'p_name':     name,
+      'p_email':    email,
+      'p_password': password,
+      'p_role':     role,
+      'p_phone':    phone,
     });
-    if (res.status != 200) throw Exception(res.data?['error'] ?? 'Failed to create user');
-    return UserModel.fromJson(res.data as Map<String, dynamic>);
   }
 
   Future<void> approveUser(String id) async {
-    await _supabase
-        .from('users')
-        .update({'approval_status': 'APPROVED', 'is_active': true})
-        .eq('id', id);
+    await _supabase.from('users').update({'status': 'ACTIVE'}).eq('id', id);
+  }
+
+  Future<void> rejectUser(String id) async {
+    await _supabase.from('users').update({'status': 'PENDING'}).eq('id', id);
+  }
+
+  Future<void> activate(String id) async {
+    await _supabase.from('users').update({'status': 'ACTIVE'}).eq('id', id);
   }
 
   Future<void> deactivate(String id) async {
-    await _supabase.from('users').update({'is_active': false}).eq('id', id);
-  }
-
-  Future<UserModel> update(String id, Map<String, dynamic> data) async {
-    // Convert any camelCase keys to snake_case
-    final snakeData = <String, dynamic>{};
-    data.forEach((k, v) {
-      final snake = k.replaceAllMapped(RegExp(r'[A-Z]'), (m) => '_${m.group(0)!.toLowerCase()}');
-      snakeData[snake] = v;
-    });
-    final result = await _supabase.from('users').update(snakeData).eq('id', id).select().single();
-    return UserModel.fromJson(result as Map<String, dynamic>);
+    await _supabase.from('users').update({'status': 'PENDING'}).eq('id', id);
   }
 }
