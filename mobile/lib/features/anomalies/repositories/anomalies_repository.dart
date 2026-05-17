@@ -8,7 +8,7 @@ class AnomaliesRepository {
   Future<List<AnomalyModel>> getAll({String? status}) async {
     var query = _supabase
         .from('anomaly_logs')
-        .select('*, user:users!user_id(full_name)');
+        .select('*, user:users!user_id(name)');
 
     if (status != null && status != 'ALL') query = query.eq('status', status);
 
@@ -26,7 +26,7 @@ class AnomaliesRepository {
           'resolved_by': _supabase.auth.currentUser?.id,
         })
         .eq('id', id)
-        .select('*, user:users!user_id(full_name)')
+        .select('*, user:users!user_id(name)')
         .single();
     return AnomalyModel.fromJson(data as Map<String, dynamic>);
   }

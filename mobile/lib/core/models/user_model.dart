@@ -17,7 +17,7 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
         id: json['id'] as String,
-        name: json['name'] as String,
+        name: (json['full_name'] ?? json['name'] ?? '') as String,
         email: json['email'] as String,
         role: json['role'] as String,
         status: json['status'] as String,
@@ -38,4 +38,5 @@ class UserModel {
   bool get isDriver    => role == 'driver';
   bool get isFinance   => role == 'finance';
   bool get isSuperAdmin => role == 'super_admin';
+  bool get isManager    => role == 'manager';
 }

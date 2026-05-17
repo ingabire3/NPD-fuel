@@ -43,7 +43,7 @@ class AllocationModel {
         allocatedLiters: (j['allocated_liters'] as num).toDouble(),
         allocatedAmount: (j['allocated_amount'] as num).toDouble(),
         remainingLiters: (j['remaining_liters'] as num).toDouble(),
-        userName: j['user']?['full_name'] as String?,
+        userName: j['user']?['name'] as String?,
         vehiclePlate: j['vehicle']?['plate_number'] as String?,
         createdAt: DateTime.parse(j['created_at'] as String),
       );

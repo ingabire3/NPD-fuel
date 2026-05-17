@@ -108,6 +108,41 @@ class _RequestsScreenState extends ConsumerState<RequestsScreen> {
   }
 }
 
+class _VarianceBadge extends StatelessWidget {
+  final String variance;
+  const _VarianceBadge({required this.variance});
+
+  @override
+  Widget build(BuildContext context) {
+    Color color;
+    IconData icon;
+    switch (variance) {
+      case 'SUSPICIOUS':
+        color = AppColors.error;
+        icon = Icons.warning_rounded;
+        break;
+      case 'WARNING':
+        color = Colors.orange;
+        icon = Icons.warning_amber_rounded;
+        break;
+      default:
+        color = AppColors.success;
+        icon = Icons.check_circle_outline;
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 12, color: color),
+        const SizedBox(width: 4),
+        Text(
+          variance,
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+        ),
+      ],
+    );
+  }
+}
+
 class _RequestTile extends StatelessWidget {
   final FuelRequestModel request;
   const _RequestTile({required this.request});
@@ -160,6 +195,10 @@ class _RequestTile extends StatelessWidget {
                         style: const TextStyle(fontSize: 12, color: AppColors.textHint)),
                   ],
                 ),
+              ],
+              if (request.fuelVariance != null) ...[
+                const SizedBox(height: 6),
+                _VarianceBadge(variance: request.fuelVariance!),
               ],
             ],
           ),

@@ -104,16 +104,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
-    state = const AuthState(status: AuthStatus.unauthenticated);
     await _supabase.auth.signOut();
+    // onAuthStateChange listener fires and sets unauthenticated state —
+    // doing it here first caused a navigator lock race with dialog dismissal
   }
 
   String _parseError(dynamic e) {
     if (e is sb.AuthException) {
       final msg = e.message.toLowerCase();
-      if (msg.contains('invalid login')) return 'Invalid email or password.';
+      if (msg.contains('invalid login') || msg.contains('invalid credentials')) {
+        return 'Invalid email or password.';
+      }
       if (msg.contains('email not confirmed')) return 'Please confirm your email first.';
+      if (msg.contains('email address') && msg.contains('invalid')) {
+        return 'This email address is not allowed. Please use your work email.';
+      }
       return e.message;
+    }
+    final str = e.toString().toLowerCase();
+    if (str.contains('socketexception') ||
+        str.contains('connection reset') ||
+        str.contains('connection refused') ||
+        str.contains('network') ||
+        str.contains('clientexception')) {
+      return 'Network error. Check your connection and try again.';
     }
     return e.toString();
   }

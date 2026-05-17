@@ -83,24 +83,54 @@ class ProfileScreen extends ConsumerWidget {
   void _confirmLogout(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            onPressed: () {
-              Navigator.pop(context);
-              ref.read(authProvider.notifier).logout();
-            },
-            child: const Text('Sign Out'),
-          ),
-        ],
-      ),
+      barrierDismissible: false,
+      builder: (_) => _LogoutDialog(ref: ref),
+    );
+  }
+}
+
+class _LogoutDialog extends ConsumerStatefulWidget {
+  final WidgetRef ref;
+  const _LogoutDialog({required this.ref});
+
+  @override
+  ConsumerState<_LogoutDialog> createState() => _LogoutDialogState();
+}
+
+class _LogoutDialogState extends ConsumerState<_LogoutDialog> {
+  bool _loading = false;
+
+  Future<void> _doLogout() async {
+    setState(() => _loading = true);
+    // Pop dialog first, then sign out — avoids navigator lock race
+    if (mounted) Navigator.of(context).pop();
+    await widget.ref.read(authProvider.notifier).logout();
+    // go_router redirect to /login is handled by _RouterNotifier listener
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Sign Out'),
+      content: _loading
+          ? const SizedBox(
+              height: 48,
+              child: Center(child: CircularProgressIndicator()),
+            )
+          : const Text('Are you sure you want to sign out?'),
+      actions: _loading
+          ? null
+          : [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+                onPressed: _doLogout,
+                child: const Text('Sign Out'),
+              ),
+            ],
     );
   }
 }

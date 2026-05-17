@@ -6,7 +6,7 @@ class VehicleModel {
   final int year;
   final String fuelType;
   final double tankCapacity;
-  final double averageKmPerL;
+  final double fuelEfficiency;
   final String? assignedDriverId;
   final String? assignedDriverName;
   final bool isActive;
@@ -19,7 +19,7 @@ class VehicleModel {
     required this.year,
     required this.fuelType,
     required this.tankCapacity,
-    required this.averageKmPerL,
+    required this.fuelEfficiency,
     this.assignedDriverId,
     this.assignedDriverName,
     required this.isActive,
@@ -35,9 +35,9 @@ class VehicleModel {
         year: j['year'] as int,
         fuelType: j['fuel_type'] as String,
         tankCapacity: (j['tank_capacity'] as num).toDouble(),
-        averageKmPerL: (j['average_km_per_l'] as num?)?.toDouble() ?? 0.0,
-        assignedDriverId: j['assigned_driver_id'] as String?,
-        assignedDriverName: j['assigned_driver']?['full_name'] as String?,
+        fuelEfficiency: (j['fuel_efficiency'] as num?)?.toDouble() ?? 10.0,
+        assignedDriverId: j['user_id'] as String?,
+        assignedDriverName: (j['assigned_driver']?['name'] ?? j['assigned_driver']?['full_name']) as String?,
         isActive: j['is_active'] as bool? ?? true,
       );
 }

@@ -7,5 +7,8 @@ final dashboardRepositoryProvider = Provider<DashboardRepository>(
 );
 
 final dashboardStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  // Re-fetch whenever the authenticated user changes (role matters for RPC result)
+  final user = ref.watch(authProvider).user;
+  if (user == null) return {};
   return ref.read(dashboardRepositoryProvider).getStats();
 });

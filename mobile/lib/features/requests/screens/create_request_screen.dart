@@ -6,12 +6,13 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/requests_provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../dashboard/providers/dashboard_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/loading_overlay.dart';
 
 final _vehiclesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final supabase = ref.read(apiClientProvider);
-  final data = await supabase.from('vehicles').select().eq('is_active', true).order('plate_number');
+  final data = await supabase.from('vehicles').select().order('plate_number');
   return (data as List).map((v) => {
         'id': v['id'] as String,
         'plate': v['plate_number'] as String,
@@ -76,15 +77,14 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
     }
   }
 
-  // Returns color based on how much the entered liters deviates from recommendation
   Color _varianceColor() {
     if (_recommendedLiters == null) return AppColors.info;
     final entered = double.tryParse(_litersCtrl.text) ?? 0;
     if (entered == 0) return AppColors.info;
     final ratio = entered / _recommendedLiters!;
-    if (ratio <= 1.2) return Colors.green;
-    if (ratio <= 1.5) return Colors.orange;
-    return AppColors.error;
+    if (ratio > 1.2) return AppColors.error;
+    if (ratio >= 1.1) return Colors.orange;
+    return Colors.green;
   }
 
   String _varianceLabel() {
@@ -92,9 +92,9 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
     final entered = double.tryParse(_litersCtrl.text) ?? 0;
     if (entered == 0) return '';
     final ratio = entered / _recommendedLiters!;
-    if (ratio <= 1.2) return 'Within expected range';
-    if (ratio <= 1.5) return 'Slightly above expected — will be noted';
-    return 'Significantly above expected — will be flagged for review';
+    if (ratio > 1.2) return '🔴 SUSPICIOUS — >20% over expected, will be flagged for review';
+    if (ratio >= 1.1) return '⚠️ WARNING — 10–20% over expected, Finance will review';
+    return '✅ FAIR — within expected range';
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -139,6 +139,8 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
 
     if (!mounted) return;
     if (result != null) {
+      ref.invalidate(requestsListProvider);
+      ref.invalidate(dashboardStatsProvider);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Request submitted successfully!'),

@@ -55,6 +55,24 @@ class CreateAllocationNotifier extends StateNotifier<CreateAllocationState> {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
+
+  Future<void> update({
+    required String id,
+    required double allocatedLiters,
+    required double allocatedAmount,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null, success: false);
+    try {
+      await _repo.update(
+        id: id,
+        allocatedLiters: allocatedLiters,
+        allocatedAmount: allocatedAmount,
+      );
+      state = state.copyWith(isLoading: false, success: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
 }
 
 final createAllocationProvider =

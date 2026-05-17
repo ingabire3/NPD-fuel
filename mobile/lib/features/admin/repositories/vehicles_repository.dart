@@ -8,7 +8,7 @@ class VehiclesRepository {
   Future<List<VehicleModel>> getAll() async {
     final data = await _supabase
         .from('vehicles')
-        .select('*, assigned_driver:users!assigned_driver_id(full_name)')
+        .select('*, assigned_driver:users!user_id(name)')
         .order('created_at', ascending: false);
     return (data as List).map((e) => VehicleModel.fromJson(e as Map<String, dynamic>)).toList();
   }
@@ -20,7 +20,7 @@ class VehiclesRepository {
     required int year,
     required String fuelType,
     required double tankCapacity,
-    required double averageKmPerL,
+    required double fuelEfficiency,
   }) async {
     final data = await _supabase.from('vehicles').insert({
       'plate_number': plateNumber,
@@ -29,17 +29,17 @@ class VehiclesRepository {
       'year': year,
       'fuel_type': fuelType,
       'tank_capacity': tankCapacity,
-      'average_km_per_l': averageKmPerL,
-    }).select('*, assigned_driver:users!assigned_driver_id(full_name)').single();
+      'fuel_efficiency': fuelEfficiency,
+    }).select('*, assigned_driver:users!user_id(name)').single();
     return VehicleModel.fromJson(data as Map<String, dynamic>);
   }
 
   Future<VehicleModel> assignDriver(String vehicleId, String driverId) async {
     final data = await _supabase
         .from('vehicles')
-        .update({'assigned_driver_id': driverId})
+        .update({'user_id': driverId})
         .eq('id', vehicleId)
-        .select('*, assigned_driver:users!assigned_driver_id(full_name)')
+        .select('*, assigned_driver:users!user_id(name)')
         .single();
     return VehicleModel.fromJson(data as Map<String, dynamic>);
   }

@@ -121,7 +121,7 @@ class VehicleActionNotifier extends StateNotifier<AsyncValue<void>> {
     required int year,
     required String fuelType,
     required double tankCapacity,
-    required double averageKmPerL,
+    required double fuelEfficiency,
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -132,7 +132,7 @@ class VehicleActionNotifier extends StateNotifier<AsyncValue<void>> {
         year: year,
         fuelType: fuelType,
         tankCapacity: tankCapacity,
-        averageKmPerL: averageKmPerL,
+        fuelEfficiency: fuelEfficiency,
       );
       _ref.invalidate(vehiclesListProvider);
       state = const AsyncValue.data(null);

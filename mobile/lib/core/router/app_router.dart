@@ -19,6 +19,8 @@ import '../../features/anomalies/screens/anomalies_screen.dart';
 import '../../features/admin/screens/users_screen.dart';
 import '../../features/admin/screens/create_user_screen.dart';
 import '../../features/admin/screens/vehicles_screen.dart';
+import '../../features/allocations/screens/odometer_screen.dart';
+import '../../features/reports/screens/reports_screen.dart';
 import '../widgets/main_scaffold.dart';
 
 // Caches auth status so redirect never calls ref.read during Riverpod's rebuild cycle
@@ -127,7 +129,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                   allocation: state.extra as AllocationModel?,
                 ),
               ),
+              GoRoute(
+                path: 'odometer',
+                builder: (_, __) => const OdometerScreen(),
+              ),
             ],
+          ),
+          GoRoute(
+            path: '/reports',
+            builder: (_, __) => const ReportsScreen(),
           ),
           GoRoute(
             path: '/anomalies',

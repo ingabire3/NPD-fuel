@@ -31,7 +31,7 @@ class AnomalyModel {
         id: j['id'] as String,
         requestId: j['request_id'] as String?,
         userId: j['user_id'] as String,
-        userName: j['user']?['full_name'] as String?,
+        userName: (j['user']?['name'] ?? j['user']?['full_name']) as String?,
         type: j['type'] as String,
         description: j['description'] as String,
         status: j['status'] as String,

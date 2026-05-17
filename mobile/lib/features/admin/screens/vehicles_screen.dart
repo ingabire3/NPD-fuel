@@ -113,7 +113,7 @@ class VehiclesScreen extends ConsumerWidget {
                               year: int.tryParse(yearCtrl.text) ?? DateTime.now().year,
                               fuelType: fuelType,
                               tankCapacity: double.tryParse(tankCtrl.text) ?? 60,
-                              averageKmPerL: double.tryParse(kmCtrl.text) ?? 0,
+                              fuelEfficiency: double.tryParse(kmCtrl.text) ?? 10.0,
                             );
                         if (ctx.mounted) Navigator.pop(ctx);
                         if (context.mounted) {

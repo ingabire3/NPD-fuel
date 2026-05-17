@@ -29,6 +29,12 @@ class _DriverAllocationView extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('My Fuel Allocation')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/allocations/odometer'),
+        icon: const Icon(Icons.speed_outlined),
+        label: const Text('Odometer'),
+        backgroundColor: AppColors.primary,
+      ),
       body: asyncAlloc.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
@@ -43,7 +49,7 @@ class _DriverAllocationView extends ConsumerWidget {
                   Text('No allocation for this month',
                       style: TextStyle(color: AppColors.textSecondary)),
                   SizedBox(height: 4),
-                  Text('Contact your manager to create one',
+                  Text('Contact Finance to create one',
                       style: TextStyle(color: AppColors.textHint, fontSize: 12)),
                 ],
               ),
@@ -103,9 +109,16 @@ class _ManagerAllocationView extends ConsumerWidget {
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: list.length,
-              itemBuilder: (_, i) => Padding(
+              itemBuilder: (ctx, i) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: _AllocationCard(alloc: list[i], showUser: true),
+                child: _AllocationCard(
+                  alloc: list[i],
+                  showUser: true,
+                  onEdit: () => ctx.push(
+                    '/allocations/${list[i].id}/edit',
+                    extra: list[i],
+                  ),
+                ),
               ),
             ),
           );
@@ -118,8 +131,9 @@ class _ManagerAllocationView extends ConsumerWidget {
 class _AllocationCard extends StatelessWidget {
   final AllocationModel alloc;
   final bool showUser;
+  final VoidCallback? onEdit;
 
-  const _AllocationCard({required this.alloc, required this.showUser});
+  const _AllocationCard({required this.alloc, required this.showUser, this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -182,6 +196,17 @@ class _AllocationCard extends StatelessWidget {
                   ),
                 ),
               ),
+              if (onEdit != null) ...[
+                const SizedBox(width: 6),
+                InkWell(
+                  onTap: onEdit,
+                  borderRadius: BorderRadius.circular(20),
+                  child: const Padding(
+                    padding: EdgeInsets.all(6),
+                    child: Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 16),

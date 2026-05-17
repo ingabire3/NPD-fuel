@@ -40,7 +40,7 @@ class FuelRequestModel {
   factory FuelRequestModel.fromJson(Map<String, dynamic> json) => FuelRequestModel(
         id: json['id'] as String,
         driverId: json['driver_id'] as String,
-        driverName: json['driver']?['full_name'] as String?,
+        driverName: json['driver']?['name'] as String?,
         vehicleId: json['vehicle_id'] as String,
         vehiclePlate: json['vehicle']?['plate_number'] as String?,
         requestedLiters: (json['requested_liters'] as num).toDouble(),

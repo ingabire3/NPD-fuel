@@ -1,10 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["public"]
 }
 
 // ─── ENUMS ────────────────────────────────────────────────────────────────────
@@ -14,11 +17,15 @@ enum Role {
   MANAGER
   DRIVER
   FINANCE
+
+  @@schema("public")
 }
 
 enum FuelType {
   PETROL
   DIESEL
+
+  @@schema("public")
 }
 
 enum RequestStatus {
@@ -27,12 +34,16 @@ enum RequestStatus {
   REJECTED
   FULFILLED
   CANCELLED
+
+  @@schema("public")
 }
 
 enum VerificationStatus {
   PENDING
   VERIFIED
   FLAGGED
+
+  @@schema("public")
 }
 
 enum AnomalyType {
@@ -41,36 +52,48 @@ enum AnomalyType {
   ODOMETER_MISMATCH
   FREQUENCY_ABUSE
   ALLOCATION_EXCEEDED
+
+  @@schema("public")
 }
 
 enum AnomalySeverity {
   LOW
   MEDIUM
   HIGH
+
+  @@schema("public")
 }
 
 enum AnomalyStatus {
   OPEN
   RESOLVED
   DISMISSED
+
+  @@schema("public")
 }
 
 enum FuelVariance {
   NORMAL
   WARNING
   SUSPICIOUS
+
+  @@schema("public")
 }
 
 enum UserApprovalStatus {
   PENDING
   APPROVED
   REJECTED
+
+  @@schema("public")
 }
 
 enum SystemRecommendation {
   APPROVE
   FLAG
   REJECT
+
+  @@schema("public")
 }
 
 // ─── MODELS ───────────────────────────────────────────────────────────────────
@@ -110,7 +133,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("users")
+  @@map("backend_users")
+  @@schema("public")
 }
 
 model RefreshToken {
@@ -122,6 +146,7 @@ model RefreshToken {
   createdAt DateTime @default(now())
 
   @@map("refresh_tokens")
+  @@schema("public")
 }
 
 model Vehicle {
@@ -145,7 +170,8 @@ model Vehicle {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("vehicles")
+  @@map("backend_vehicles")
+  @@schema("public")
 }
 
 model FuelAllocation {
@@ -172,6 +198,7 @@ model FuelAllocation {
 
   @@unique([userId, vehicleId, month, year])
   @@map("fuel_allocations")
+  @@schema("public")
 }
 
 model FuelRequest {
@@ -210,6 +237,7 @@ model FuelRequest {
   updatedAt   DateTime  @updatedAt
 
   @@map("fuel_requests")
+  @@schema("public")
 }
 
 model FuelReceipt {
@@ -234,6 +262,7 @@ model FuelReceipt {
   updatedAt DateTime @updatedAt
 
   @@map("fuel_receipts")
+  @@schema("public")
 }
 
 model AnomalyLog {
@@ -257,6 +286,7 @@ model AnomalyLog {
   updatedAt DateTime @updatedAt
 
   @@map("anomaly_logs")
+  @@schema("public")
 }
 
 model Notification {
@@ -272,6 +302,7 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@map("notifications")
+  @@schema("public")
 }
 
 model RouteCache {
@@ -281,6 +312,7 @@ model RouteCache {
   createdAt  DateTime @default(now())
 
   @@map("route_cache")
+  @@schema("public")
 }
 
 model MonthlyOdometerReading {
@@ -302,4 +334,5 @@ model MonthlyOdometerReading {
 
   @@unique([userId, vehicleId, month, year])
   @@map("monthly_odometer_readings")
+  @@schema("public")
 }

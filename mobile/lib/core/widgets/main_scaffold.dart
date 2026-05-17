@@ -39,15 +39,16 @@ class MainScaffold extends ConsumerWidget {
         return const [
           _NavTab('/dashboard', 'Dashboard', Icons.dashboard_outlined, Icons.dashboard),
           _NavTab('/requests', 'Requests', Icons.local_gas_station_outlined, Icons.local_gas_station),
-          _NavTab('/allocations', 'Allocations', Icons.assignment_outlined, Icons.assignment),
+          _NavTab('/reports', 'Reports', Icons.analytics_outlined, Icons.analytics),
           _NavTab('/anomalies', 'Anomalies', Icons.warning_amber_outlined, Icons.warning_amber),
           _NavTab('/profile', 'Profile', Icons.person_outline, Icons.person),
         ];
       case 'finance':
         return const [
           _NavTab('/dashboard', 'Dashboard', Icons.bar_chart_outlined, Icons.bar_chart),
+          _NavTab('/requests', 'Requests', Icons.local_gas_station_outlined, Icons.local_gas_station),
           _NavTab('/allocations', 'Allocations', Icons.assignment_outlined, Icons.assignment),
-          _NavTab('/notifications', 'Alerts', Icons.notifications_outlined, Icons.notifications),
+          _NavTab('/reports', 'Reports', Icons.analytics_outlined, Icons.analytics),
           _NavTab('/profile', 'Profile', Icons.person_outline, Icons.person),
         ];
       default: // driver

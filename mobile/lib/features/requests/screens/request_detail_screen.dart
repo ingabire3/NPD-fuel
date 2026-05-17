@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../providers/requests_provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../dashboard/providers/dashboard_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/models/fuel_request_model.dart';
 import '../../../core/widgets/status_badge.dart';
@@ -58,6 +59,7 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
       if (!mounted) return;
       ref.invalidate(requestDetailProvider(widget.request.id));
       ref.invalidate(requestsListProvider);
+      ref.invalidate(dashboardStatsProvider);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Request approved'), backgroundColor: AppColors.success),
       );
@@ -85,6 +87,7 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
       if (!mounted) return;
       ref.invalidate(requestDetailProvider(widget.request.id));
       ref.invalidate(requestsListProvider);
+      ref.invalidate(dashboardStatsProvider);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Request rejected'), backgroundColor: AppColors.warning),
       );
@@ -139,6 +142,7 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
       if (!mounted) return;
       ref.invalidate(requestDetailProvider(widget.request.id));
       ref.invalidate(requestsListProvider);
+      ref.invalidate(dashboardStatsProvider);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Marked as fulfilled'), backgroundColor: AppColors.success),
       );
@@ -191,6 +195,10 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
             ),
           ),
           const SizedBox(height: 12),
+          if (req.fuelVariance != null && req.expectedFuel != null)
+            _AiAnalysisCard(request: req),
+          if (req.fuelVariance != null && req.expectedFuel != null)
+            const SizedBox(height: 12),
           _InfoCard(children: [
             _InfoRow(label: 'Purpose', value: req.purpose),
             _InfoRow(
@@ -276,6 +284,103 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
           ],
         ],
       ),
+    );
+  }
+}
+
+class _AiAnalysisCard extends StatelessWidget {
+  final FuelRequestModel request;
+  const _AiAnalysisCard({required this.request});
+
+  @override
+  Widget build(BuildContext context) {
+    final variance = request.fuelVariance ?? 'FAIR';
+    final expected = request.expectedFuel ?? 0;
+    final requested = request.requestedLiters;
+    final deviation = expected > 0 ? ((requested - expected) / expected * 100) : 0.0;
+
+    Color color;
+    IconData icon;
+    switch (variance) {
+      case 'SUSPICIOUS':
+        color = AppColors.error;
+        icon = Icons.warning_rounded;
+        break;
+      case 'WARNING':
+        color = Colors.orange;
+        icon = Icons.warning_amber_rounded;
+        break;
+      default:
+        color = AppColors.success;
+        icon = Icons.check_circle_outline;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                'AI Analysis — $variance',
+                style: TextStyle(fontWeight: FontWeight.bold, color: color),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _AnalysisStat(label: 'Expected', value: '${expected.toStringAsFixed(1)} L'),
+              _AnalysisStat(label: 'Requested', value: '${requested.toStringAsFixed(1)} L'),
+              _AnalysisStat(
+                label: 'Deviation',
+                value: '${deviation >= 0 ? '+' : ''}${deviation.toStringAsFixed(1)}%',
+                color: color,
+              ),
+            ],
+          ),
+          if (request.estimatedDistance != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Based on ${request.estimatedDistance!.toStringAsFixed(1)} km round trip',
+              style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _AnalysisStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? color;
+  const _AnalysisStat({required this.label, required this.value, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+        const SizedBox(height: 2),
+        Text(value,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: color ?? AppColors.textPrimary,
+            )),
+      ],
     );
   }
 }

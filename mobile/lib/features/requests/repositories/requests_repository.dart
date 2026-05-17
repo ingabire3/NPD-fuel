@@ -10,7 +10,7 @@ class RequestsRepository {
   Future<List<FuelRequestModel>> getRequests({String? status}) async {
     var query = _supabase
         .from('fuel_requests')
-        .select('*, driver:users!driver_id(full_name), vehicle:vehicles!vehicle_id(plate_number)');
+        .select('*, driver:users!driver_id(name), vehicle:vehicles!vehicle_id(plate_number)');
 
     if (status != null) query = query.eq('status', status);
 
@@ -21,7 +21,7 @@ class RequestsRepository {
   Future<FuelRequestModel> getRequest(String id) async {
     final data = await _supabase
         .from('fuel_requests')
-        .select('*, driver:users!driver_id(full_name), vehicle:vehicles!vehicle_id(plate_number)')
+        .select('*, driver:users!driver_id(name), vehicle:vehicles!vehicle_id(plate_number)')
         .eq('id', id)
         .single();
     return FuelRequestModel.fromJson(data as Map<String, dynamic>);
@@ -31,21 +31,22 @@ class RequestsRepository {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return null;
 
-    final vehicle = await _supabase.from('vehicles').select('average_km_per_l').eq('id', vehicleId).single();
-    final user = await _supabase
-        .from('users')
+    final vehicle = await _supabase.from('vehicles').select('fuel_efficiency').eq('id', vehicleId).single();
+    final location = await _supabase
+        .from('locations')
         .select('home_lat,home_lng,work_lat,work_lng')
-        .eq('id', userId)
-        .single();
+        .eq('user_id', userId)
+        .maybeSingle();
 
-    final homeLat = (user['home_lat'] as num?)?.toDouble();
-    final homeLng = (user['home_lng'] as num?)?.toDouble();
-    final workLat = (user['work_lat'] as num?)?.toDouble();
-    final workLng = (user['work_lng'] as num?)?.toDouble();
+    if (location == null) return null;
+    final homeLat = (location['home_lat'] as num?)?.toDouble();
+    final homeLng = (location['home_lng'] as num?)?.toDouble();
+    final workLat = (location['work_lat'] as num?)?.toDouble();
+    final workLng = (location['work_lng'] as num?)?.toDouble();
     if (homeLat == null || homeLng == null || workLat == null || workLng == null) return null;
 
     final distanceKm = LocationService.haversineKm(homeLat, homeLng, workLat, workLng) * 2;
-    final avgKmPerL = (vehicle['average_km_per_l'] as num?)?.toDouble() ?? 10.0;
+    final avgKmPerL = (vehicle['fuel_efficiency'] as num?)?.toDouble() ?? 10.0;
     final expectedFuel = (distanceKm / avgKmPerL) * 1.15;
 
     return {'distanceKm': distanceKm, 'expectedFuel': expectedFuel};
@@ -75,8 +76,8 @@ class RequestsRepository {
     String variance = 'NORMAL';
     if (estimate != null && (estimate['expectedFuel'] as double) > 0) {
       final ratio = liters / (estimate['expectedFuel'] as double);
-      if (ratio > 1.5) variance = 'SUSPICIOUS';
-      else if (ratio > 1.2) variance = 'WARNING';
+      if (ratio > 1.2) variance = 'SUSPICIOUS';
+      else if (ratio >= 1.1) variance = 'WARNING';
     }
 
     final data = await _supabase.from('fuel_requests').insert({
@@ -90,7 +91,7 @@ class RequestsRepository {
       if (estimate != null) 'estimated_distance': estimate['distanceKm'],
       if (estimate != null) 'expected_fuel': estimate['expectedFuel'],
       'fuel_variance': variance,
-    }).select('*, driver:users!driver_id(full_name), vehicle:vehicles!vehicle_id(plate_number)').single();
+    }).select('*, driver:users!driver_id(name), vehicle:vehicles!vehicle_id(plate_number)').single();
 
     return FuelRequestModel.fromJson(data as Map<String, dynamic>);
   }

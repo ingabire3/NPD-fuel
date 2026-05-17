@@ -182,16 +182,51 @@ class _StatsGrid extends StatelessWidget {
     if (role == 'super_admin') {
       cards.addAll([
         _StatCard(
-          label: 'Pending Requests',
+          label: 'Total Requests',
+          value: '${stats['totalRequests'] ?? 0}',
+          icon: Icons.local_gas_station,
+          color: AppColors.primary,
+          bg: AppColors.primaryContainer,
+        ),
+        _StatCard(
+          label: 'Pending',
           value: '${stats['pendingRequests'] ?? 0}',
           icon: Icons.pending_actions,
           color: AppColors.warning,
           bg: AppColors.warningLight,
         ),
         _StatCard(
+          label: 'Approved',
+          value: '${stats['approvedRequests'] ?? 0}',
+          icon: Icons.thumb_up_outlined,
+          color: AppColors.info,
+          bg: AppColors.infoLight,
+        ),
+        _StatCard(
+          label: 'Fulfilled',
+          value: '${stats['fulfilledRequests'] ?? 0}',
+          icon: Icons.check_circle_outline,
+          color: AppColors.success,
+          bg: AppColors.successLight,
+        ),
+        _StatCard(
+          label: 'Total Drivers',
+          value: '${stats['totalDrivers'] ?? 0}',
+          icon: Icons.people_outlined,
+          color: AppColors.primary,
+          bg: AppColors.primaryContainer,
+        ),
+        _StatCard(
           label: 'Total Vehicles',
           value: '${stats['totalVehicles'] ?? 0}',
           icon: Icons.directions_car,
+          color: AppColors.info,
+          bg: AppColors.infoLight,
+        ),
+        _StatCard(
+          label: 'Allocated (L)',
+          value: '${(stats['totalAllocatedLiters'] as num?)?.toStringAsFixed(0) ?? 0}',
+          icon: Icons.water_drop_outlined,
           color: AppColors.primary,
           bg: AppColors.primaryContainer,
         ),
@@ -201,13 +236,6 @@ class _StatsGrid extends StatelessWidget {
           icon: Icons.warning_amber,
           color: AppColors.error,
           bg: AppColors.errorLight,
-        ),
-        _StatCard(
-          label: 'Fulfilled Today',
-          value: '${stats['fulfilledToday'] ?? 0}',
-          icon: Icons.check_circle_outline,
-          color: AppColors.success,
-          bg: AppColors.successLight,
         ),
       ]);
     } else if (role == 'driver') {
@@ -388,7 +416,7 @@ class _QuickActions extends StatelessWidget {
           color: AppColors.primary,
           onTap: () => context.go('/receipts'),
         ),
-        if (role == 'driver')
+        if (role == 'driver') ...[
           _ActionTile(
             icon: Icons.water_drop_outlined,
             label: 'My Allocation',
@@ -396,6 +424,14 @@ class _QuickActions extends StatelessWidget {
             color: AppColors.primary,
             onTap: () => context.go('/allocations'),
           ),
+          _ActionTile(
+            icon: Icons.speed_outlined,
+            label: 'Odometer Reading',
+            subtitle: 'Submit start/end of month odometer',
+            color: AppColors.primary,
+            onTap: () => context.go('/allocations/odometer'),
+          ),
+        ],
         if (role == 'finance') ...[
           _ActionTile(
             icon: Icons.assignment_outlined,
@@ -403,6 +439,13 @@ class _QuickActions extends StatelessWidget {
             subtitle: 'Track monthly fuel budgets',
             color: AppColors.primary,
             onTap: () => context.go('/allocations'),
+          ),
+          _ActionTile(
+            icon: Icons.analytics_outlined,
+            label: 'Monthly Report',
+            subtitle: 'Driver-by-driver fuel usage comparison',
+            color: AppColors.info,
+            onTap: () => context.go('/reports'),
           ),
           _ActionTile(
             icon: Icons.warning_amber_outlined,
@@ -413,6 +456,13 @@ class _QuickActions extends StatelessWidget {
           ),
         ],
         if (role == 'super_admin') ...[
+          _ActionTile(
+            icon: Icons.analytics_outlined,
+            label: 'Monthly Report',
+            subtitle: 'Driver-by-driver fuel usage comparison',
+            color: AppColors.info,
+            onTap: () => context.go('/reports'),
+          ),
           _ActionTile(
             icon: Icons.people_outlined,
             label: 'User Management',
