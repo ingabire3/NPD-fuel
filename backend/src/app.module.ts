@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import configuration from './config/configuration';
 import { PrismaModule } from './prisma/prisma.module';
@@ -19,7 +19,11 @@ import { ValidationPipe } from './common/pipes/validation.pipe';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    ConfigModule.forRoot({ 
+      isGlobal: true, 
+      load: [configuration],
+      envFilePath: '.env',
+    }),
     PrismaModule,
     AuthModule,
     UsersModule,
